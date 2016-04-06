@@ -1,0 +1,114 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1348\cocoasubrtf170
+{\fonttbl\f0\fnil\fcharset0 AndaleMono;}
+{\colortbl;\red255\green255\blue255;\red47\green255\blue18;\red126\green255\blue165;\red230\green229\blue229;
+\red251\green0\blue255;\red232\green235\blue20;\red46\green174\blue187;}
+\margl1440\margr1440\vieww19500\viewh8400\viewkind0
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs26 \cf2 \cb0 \CocoaLigature0 \
+\cf3 void\cf2  decodepixel(\cf3 int\cf2  dcol, \cf3 int\cf2  pix, \cf3 int\cf2  & column, \cf3 int\cf2  & row ) \{\
+\
+        \cf4 if\cf2 ( dcol > \cf5 0\cf2  && pix > \cf5 0\cf2  )\{\
+                row = \cf5 80\cf2  - pix/\cf5 2\cf2 ;\
+                column = \cf5 2\cf2 *dcol + (pix&\cf5 1\cf2 );\
+                cout << \cf5 "y(row): "\cf2  << row << \cf5 " x(col): "\cf2  << column << \cf5 " dcol: "\cf2  << dcol << \cf5 " pix: "\cf2  << pix << endl;    \
+        \}\
+        \cf6 return\cf2 ;\
+\}\
+\
+\cf3 nt\cf2  make( TString fileName ) \{\
+\
+        cout<<\cf5 "Setingup"\cf2 <<endl;\
+        string outFile(fileName + \cf5 "_stats.txt"\cf2 );\
+        string pngFile( fileName + \cf5 ".png"\cf2 );\
+        string inFileName(\cf5 "fileName"\cf2 );\
+        string input, word1, word2, word3, word4, word5, word6;\
+        \cf3 int\cf2  channel, roc, dcol, pixel, col, row, fedevent, tbmevent;\
+        \cf3 int\cf2  event = \cf5 0\cf2 ;\
+        \cf3 int\cf2  hits33 = \cf5 0\cf2 ;\
+        \cf3 int\cf2  hits34 = \cf5 0\cf2 ;\
+        \cf3 int\cf2  rochit[\cf5 16\cf2 ];\
+        \cf3 int\cf2  hits = \cf5 0\cf2 ;\
+        \cf3 int\cf2  hitsprocpevent= \cf5 0\cf2 ;\
+        \cf3 int\cf2  badhitspevent = \cf5 0\cf2 ;\
+        \cf3 int\cf2  badhit = \cf5 0\cf2 ;\
+        \cf3 int\cf2  curfedevent = \cf5 0\cf2 ;\
+        \cf3 int\cf2  curtbmevent = \cf5 0\cf2 ;\
+\
+        \cf4 for\cf2 ( \cf3 int\cf2  i = \cf5 0\cf2 ; i < \cf5 16\cf2 ; i++)\{ rochit[i] = \cf5 0\cf2 ; \}\
+\
+        cout<<\cf5 "Making Histo"\cf2 <<endl;\
+        TCanvas *c1 = \cf6 new\cf2  TCanvas(\cf5 "c1"\cf2 , \cf5 "c1"\cf2 ,\cf5 900\cf2 ,\cf5 900\cf2 );\
+\
+        \cf7 // Create, fill and project a 2D histogram.\cf2 \
+        TH2D *h2 = \cf6 new\cf2  TH2D(\cf5 "h2"\cf2 ,\cf5 "h2"\cf2 ,\cf5 104\cf2 ,\cf5 0\cf2 ,\cf5 103\cf2 ,\cf5 640\cf2 ,\cf5 0\cf2 ,\cf5 639\cf2 );\
+\
+        ifstream in;\
+        in.open( inFileName.c_str() );\
+        stringstream ss;\
+\
+        cout<<\cf5 "starting loop"\cf2 <<endl;\
+\
+\
+        \cf4 while\cf2 ( !in.eof() )\{\
+\
+                roc = -\cf5 1\cf2 ;\
+                dcol = -\cf5 1\cf2 ;\
+                pixel = -\cf5 1\cf2 ;\
+                row = -\cf5 1\cf2 ;\
+                col = -\cf5 1\cf2 ;\
+\
+                getline( in, input );\
+                ss << input;\
+                ss >> word1;\
+                ss >> word2;\
+                ss >> fedevent;\
+                ss >> channel;\
+                ss >> word4;\
+                ss >> roc;\
+                ss >> word5;\
+                ss >> dcol;\
+                ss >> word6;\
+                ss >> pixel;\
+\
+                cout << word1 << \cf5 " "\cf2  << word2 << \cf5 " "\cf2  << fedevent << \cf5 " "\cf2  << channel << \cf5 " "\cf2  << word4 << \cf5 " "\cf2  << roc << \cf5 " "\cf2 ;\
+                cout << word5 << \cf5 " "\cf2  << dcol << \cf5 " "\cf2  << word6 << \cf5 " "\cf2  << pixel << endl;\
+                \cf4 if\cf2 ( word1 == \cf5 "data"\cf2  )\{\
+                        decodepixel( dcol, pixel, col, row );\
+                        \cf4 if\cf2 ( channel == \cf5 34\cf2  )\{\
+                                col = (\cf5 52\cf2 -col)+(\cf5 7\cf2 -roc)*\cf5 52\cf2 ;\
+                                row = (\cf5 160\cf2 -row);\
+                                hits34++;\
+                        \}\cf4 else\cf2 \{\
+                                col = col + roc*\cf5 52\cf2 ;\
+                                hits33++;\
+                        \}\
+                        cout << \cf5 "Translated: "\cf2  << col << \cf5 " "\cf2  << row <<  std::endl;\
+                \}\
+                \cf7 //  load histo\cf2 \
+                \cf4 if\cf2 ( (col >= \cf5 0\cf2 ) && (col < \cf5 416\cf2 ) && (row >= \cf5 0\cf2 ) && (row < \cf5 160\cf2 ) )\{\
+                        h2->Fill(row,col);\
+                        \cf7 //cout << "Filling " << col << " " << row << endl;\cf2 \
+                        hits++;\
+                        rochit[roc]++;\
+                \}\cf4 else\cf2 \{\
+                        badhit++;\
+                \}\
+                \cf4 if\cf2 ( (word1 == \cf5 "for"\cf2 ) && (word2 == \cf5 "event"\cf2 ) )\{\
+                        events++;\
+                \}\
+        \}\
+        \cf7 // Drawing\cf2 \
+        cout << \cf5 " drawing "\cf2  << endl;\
+        h2->Draw(\cf5 "COL"\cf2 );\
+\
+        string temp;\
+        \cf7 //      cout<< "press any key and return to continue" << endl;\cf2 \
+        \cf7 //      cin >> temp;\cf2 \
+\
+        c1->SaveAs( pngFile );\
+\
+        in.close();\
+\
+        \cf6 return\cf2  \cf5 1\cf2 ;\
+\}}
